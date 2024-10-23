@@ -36,15 +36,17 @@ fn main() -> ! {
     Serial::println("Hello, World!");
     Serial::println("STM34G431 rust test");
     Serial::println("You are receiving this information over USART1");
-    Serial::println("Please type something: ");
-    let string = Serial::read_input_text();
-    Serial::println(format!("You've typed: {}", string).as_str());
-    Serial::on_receive(serial_runtime);
 
-    Serial::print("test_usefull");
-    Serial::write_byte(0x8);
-    Serial::write_byte(' ' as u8);
-    Serial::println("");
+    Serial::println("Type first number: ");
+    let n1: f32 = Serial::read_input_text().parse().expect("Text is not a valid integer");
+
+    Serial::println("Type second number: ");
+    let n2: f32 = Serial::read_input_text().parse().expect("Text is not a valid integer");
+
+    Serial::println("In total is: ");
+    Serial::println(format!("{}", n1 + n2).as_str());
+
+    Serial::on_receive(serial_runtime);
 
     loop {
 

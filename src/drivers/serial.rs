@@ -6,6 +6,7 @@ use stm32g4::stm32g431;
 use crate::system::APB2_FREQ;
 use crate::drivers::gpio::{Gpio, GpioConfig, GPIOPORT, MODER, OSPEEDR, OTYPER, PUPDR};
 use stm32g4::stm32g431::interrupt;
+use crate::core::delay::non_exact_time_delay;
 
 pub struct Serial {
 
@@ -193,9 +194,18 @@ impl Serial {
                 } else {
                     // Clone the character (User friendly)
                     Serial::write_byte(*data.as_ref().unwrap());
-                    read_buffer.push(data.unwrap() as char);
+                    read_buffer.push(*data.as_ref().unwrap() as char);
+                }
+                non_exact_time_delay(100);
+            }
+
+            if data.is_err() {
+                if data == Err(SerialError::OverRun) {
+                    Serial::clear_ore_flag();
+                    Serial::println("Over run detected!")
                 }
             }
+
         }
         Serial::println("");
         Self::enable_interrupts();
