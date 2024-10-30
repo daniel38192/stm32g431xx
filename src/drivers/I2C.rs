@@ -26,11 +26,26 @@ const PA14_I2C1_SDA: gpio::Gpio = gpio::Gpio {
 };
 
 impl I2C {
-    pub fn begin(){
 
-    }
+    pub fn master_initialization_address_phase(slave_address_to_send: u16, address_10_bit_mode: bool, i2c_transfer_direction: I2cTransferDirection, ) {
+        /**
+        * Master communication initialization (address phase)
+        * To initiate the communication with a slave to address, set the following bitfields of the I2C_CR2 register:
+        * • ADD10: addressing mode (7-bit or 10-bit)
+        * • SADD[9:0]: slave address to send
+        * • RD_WRN: transfer direction
+        * • HEAD10R: in case of 10-bit address read, this bit determines whether the header only (for direction change) or the complete address sequence is sent.
+        * • NBYTES[7:0]: the number of bytes to transfer; if equal to or greater than 255 bytes, the bitfield must initially be set to 0xFF.
+        * Note: Changing these bitfields is not allowed as long as the START bit is set.
+        */
 
-    pub fn transmit(){
+        unsafe {
+            let port = &*I2C1::ptr();
+
+            //set addressing mode.
+            port.cr2.as_ptr().write(port.cr2.as_ptr().read() | (1 << 11));
+        }
+
 
     }
 
@@ -38,14 +53,14 @@ impl I2C {
 
     }
 
-    pub fn configure_gpio(){
+    /* Private methods */
+
+    fn configure_gpio(){
         // PA13 I2C1_SCL AF4
         // PA14 I2C1_SDA AF4
         PA13_I2C1_SDA.configure(TYPE_I2C1_GPIO);
         PA14_I2C1_SDA.configure(TYPE_I2C1_GPIO)
     }
-
-    /* Private methods */
 
     fn set_timing_prescaler(){
         // Set PRESC[3:0] bits in I2C_TIMINGR register.
@@ -82,17 +97,39 @@ impl I2C {
             let port = &*I2C1::ptr();
             // Generate start condition
             port.cr2.as_ptr().write(port.cr2.as_ptr().read() | (1 << 13));
-            
         }
-    }
-
-    fn call_address(adress: u8){
-
     }
 
     fn stop_condition(){
 
     }
 
+}
 
+pub enum I2cTransferDirection {
+    MasterRequestAWrite,
+    MasterRequestARead
+}
+
+pub enum I2cHeaderOnlyReadDirection10Bit {
+    CompleteSlaveAddress,
+    SevenBitsFirst
+}
+
+impl I2cTransferDirection {
+    pub fn as_u32(&self) -> u32 {
+        match self {
+            I2cTransferDirection::MasterRequestAWrite => 0,
+            I2cTransferDirection::MasterRequestARead => 1
+        }
+    }
+}
+
+impl I2cHeaderOnlyReadDirection10Bit {
+    pub fn as_u32(&self) -> u32 {
+        match self {
+            I2cHeaderOnlyReadDirection10Bit::CompleteSlaveAddress => 0,
+            I2cHeaderOnlyReadDirection10Bit::SevenBitsFirst => 1,
+        }
+    }
 }
