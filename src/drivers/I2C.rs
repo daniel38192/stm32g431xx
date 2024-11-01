@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use alloc::format;
 use stm32g4::stm32g431;
 use stm32g4::stm32g431::I2C1;
@@ -45,8 +47,8 @@ pub struct MasterConfig {
 impl I2C {
 
     pub fn begin() {
-        Self::configure_peripheral();
         Self::enable_peripheral_clock_in_rcc();
+        Self::configure_peripheral();
         Self::enable_peripheral()
     }
 
@@ -94,7 +96,7 @@ impl I2C {
         unsafe {
             let port = &*I2C1::ptr();
 
-            while port.isr.read().txis().bit_is_clear(){}
+            while port.isr.read().txe().bit_is_clear(){}
 
             port.txdr.as_ptr().write(data_slice as u32);
 
@@ -150,9 +152,10 @@ impl I2C {
 
     fn configure_peripheral(){
         Self::configure_gpio();
-        Self::set_timing_prescaler();
-        Self::set_data_times();
-        Self::set_master_mode_periods();
+        unsafe {
+            let port = &*I2C1::ptr();
+            port.timingr.as_ptr().write(0x40B285C2);
+        }
     }
 
     fn enable_peripheral(){
@@ -193,37 +196,6 @@ impl I2C {
         PB8_I2C1_SCL.configure(TYPE_I2C1_GPIO);
         PB9_I2C1_SDA.configure(TYPE_I2C1_GPIO)
     }
-
-    fn set_timing_prescaler(){
-        // Set PRESC[3:0] bits in I2C_TIMINGR register.
-        unsafe {
-            let port = &*I2C1::ptr();
-            port.timingr.as_ptr().write(port.timingr.as_ptr().read() | (4 << 28));
-        }
-    }
-
-    fn set_data_times(){
-        unsafe {
-            let port = &*I2C1::ptr();
-            // set SCLDEL[3:0] bits in I2C_TIMINGR register.
-            port.timingr.as_ptr().write(port.timingr.as_ptr().read() | (11 << 20));
-            // set SDADEL[3:0]: bits in I2C_TIMINGR register.
-            port.timingr.as_ptr().write(port.timingr.as_ptr().read() | (2 << 16))
-        }
-    }
-
-    fn set_master_mode_periods(){
-        unsafe {
-            let port = &*I2C1::ptr();
-            // set SCLH[7:0] bits in I2C_TIMINGR register.
-            port.timingr.as_ptr().write(port.timingr.as_ptr().read() | (133 << 8));
-            // set SCLL[7:0] bits in I2C_TIMINGR register.
-            port.timingr.as_ptr().write(port.timingr.as_ptr().read() | (194 << 0));
-
-            //0100 0000 1011 0010    10000101    11000010
-        }
-    }
-
 
 }
 
