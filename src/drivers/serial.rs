@@ -2,6 +2,7 @@
 
 use alloc::string::String;
 use core::fmt::{Debug, Formatter};
+use core::ptr::read;
 use stm32g4::stm32g431;
 use crate::system::APB2_FREQ;
 use crate::drivers::gpio::{Gpio, GpioConfig, GPIOPORT, MODER, OSPEEDR, OTYPER, PUPDR};
@@ -189,8 +190,11 @@ impl Serial {
                     break
                 } else if data.as_ref().unwrap() == &0x7F {
                     // If user have made a mistake, and they want to delete a char.
-                    Self::clear_last_char();
-                    read_buffer.pop();
+
+                    if read_buffer.len() != 0 {
+                        Self::clear_last_char();
+                        read_buffer.pop();
+                    }
                 } else {
                     // Clone the character (User friendly)
                     Serial::write_byte(*data.as_ref().unwrap());

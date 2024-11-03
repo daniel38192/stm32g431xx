@@ -6,6 +6,7 @@ use stm32g4::stm32g431::I2C1;
 use crate::drivers::gpio;
 use crate::drivers::gpio::GPIOPORT;
 use crate::drivers::serial::Serial;
+use crate::core::Conversions;
 
 pub struct I2C {
 
@@ -199,9 +200,7 @@ impl I2C {
 
 }
 
-trait Conversions {
-    fn as_u32(&self) -> u32;
-}
+
 
 /*
 pub enum I2cTransferDirection {

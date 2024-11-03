@@ -5,10 +5,11 @@ mod system;
 mod drivers;
 mod core;
 
-
 use cortex_m_rt::entry;
 use crate::core::delay::non_exact_time_delay;
 use crate::drivers::gpio::{Gpio, GpioConfig, GPIOPORT, MODER, OSPEEDR, OTYPER, PUPDR};
+use crate::drivers::serial::Serial;
+use crate::drivers::SPI::SPI;
 #[global_allocator]
 static ALLOCATOR: emballoc::Allocator<4096> = emballoc::Allocator::new();
 
@@ -33,14 +34,37 @@ fn main() -> ! {
 
     LED.high();
 
+    let slave_select = Gpio {
+        port: GPIOPORT::GPIOB,
+        pin_number: 7,
+    };
+
+    slave_select.configure(GpioConfig {
+        moder: MODER::GeneralPurposeOutput,
+        otyper: OTYPER::PushPull,
+        ospeedr: OSPEEDR::Medium,
+        pupdr: PUPDR::None,
+        alf_func_sel: None
+    });
+
+    Serial::println("Spi test");
+
+    slave_select.high();
+
+    SPI::begin();
+
+    slave_select.low();
+
 
 
     loop {
 
-        LED.low();
-        non_exact_time_delay(500000);
-        LED.high();
-        non_exact_time_delay(500000);
+        Serial::print("Type char to transmit: ");
+
+        let char = Serial::read_input_text().as_bytes()[0];
+
+        SPI::transmit(Some(char as u16));
+
 
     }
 }
