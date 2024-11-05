@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use stm32g4::stm32g431;
+use stm32g4::stm32g431::interrupt;
 use crate::core::Conversions;
 use crate::drivers::gpio;
 
@@ -78,11 +79,55 @@ impl SPI {
             }
 
             if port.sr.read().rxne().bit_is_set() {
-                Some(port.dr.as_ptr() as u16)
+                Some(port.dr.as_ptr().read() as u16)
             } else {
                 None
             }
 
+        }
+    }
+
+    pub fn set_settings(spi_settings: SpiSettings){
+        Self::set_clock_divider(spi_settings.spi_clock_divider);
+        Self::set_frame_format(spi_settings.spi_frame_format);
+        Self::set_spi_mode(spi_settings.spi_mode);
+        Self::set_data_size(spi_settings.spi_data_size)
+    }
+
+    pub fn on_receive(handler: fn(u16)){
+        unsafe {
+            ON_RECEIVE_HANDLER = handler;
+        }
+    }
+
+}
+
+impl SPI {
+    fn set_clock_divider(div: SpiClockDivider) {
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+            port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (div.as_u32() << 3));
+        }
+    }
+
+    fn set_frame_format(fmt: SpiFrameFormat) {
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+            port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (fmt.as_u32() << 7));
+        }
+    }
+
+    fn set_spi_mode(mode: SpiMode) {
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+            port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (mode.as_u32() << 0));
+        }
+    }
+
+    fn set_data_size(size: SpiDataSize) {
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+            port.cr2.as_ptr().write(port.cr2.as_ptr().read() | (size.as_u32() << 8));
         }
     }
 
@@ -91,40 +136,6 @@ impl SPI {
             let port = &*stm32g431::SPI3::ptr();
             port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (master_mode.as_u32() << 2))
         }
-    }
-    pub fn set_settings(spi_settings: SpiSettings){
-        fn set_clock_divider(div: SpiClockDivider) {
-            unsafe {
-                let port = &*stm32g431::SPI3::ptr();
-                port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (div.as_u32() << 3));
-            }
-        }
-
-        fn set_frame_format(fmt: SpiFrameFormat) {
-            unsafe {
-                let port = &*stm32g431::SPI3::ptr();
-                port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (fmt.as_u32() << 7));
-            }
-        }
-
-        fn set_spi_mode(mode: SpiMode) {
-            unsafe {
-                let port = &*stm32g431::SPI3::ptr();
-                port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (mode.as_u32() << 0));
-            }
-        }
-
-        fn set_data_size(size: SpiDataSize) {
-            unsafe {
-                let port = &*stm32g431::SPI3::ptr();
-                port.cr2.as_ptr().write(port.cr2.as_ptr().read() | (size.as_u32() << 8));
-            }
-        }
-
-        set_clock_divider(spi_settings.spi_clock_divider);
-        set_frame_format(spi_settings.spi_frame_format);
-        set_spi_mode(spi_settings.spi_mode);
-        set_data_size(spi_settings.spi_data_size)
     }
 
     fn enable_peripheral(){
@@ -158,7 +169,6 @@ impl SPI {
         // PC11 SPI3_MISO  AF6
         PC11_SPI3_MISO.configure(TYPE_SPI3_GPIO_PORT);
     }
-
 }
 
 const PB5_SPI3_MOSI: gpio::Gpio = gpio::Gpio {
@@ -239,4 +249,19 @@ impl Conversions for SpiDataSize {
             SpiDataSize::Bit16 => 15
         }
     }
+}
+
+static mut ON_RECEIVE_HANDLER: fn(u16) = spi3_on_receive_default_handler;
+
+fn spi3_on_receive_default_handler(_received_data: u16) { }
+
+#[interrupt]
+fn SPI3() {
+    let port = unsafe { &*stm32g431::SPI3::ptr() };
+
+    if port.sr.read().rxne().bit_is_set() {
+        let received_data = SPI::transmit(None).unwrap();
+        unsafe {ON_RECEIVE_HANDLER(received_data)}
+    }
+
 }
