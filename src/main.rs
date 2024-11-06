@@ -55,16 +55,35 @@ fn main() -> ! {
 
     slave_select.low();
 
+    non_exact_time_delay(900);
+
+    SPI::transfer(Some('c' as u16));
+
+    non_exact_time_delay(900);
+
+    SPI::transfer(Some('a' as u16));
+
+    non_exact_time_delay(900);
+
+    SPI::transfer(Some('c' as u16));
+
+    non_exact_time_delay(900);
+
+   // slave_select.high();
+
+
+
 
 
     loop {
-
+        /*
         Serial::print("Type char to transmit: ");
 
         let char = Serial::read_input_text().as_bytes()[0];
 
-        SPI::transmit(Some(char as u16));
+        SPI::transfer(Some(char as u16));
 
+         */
 
     }
 }

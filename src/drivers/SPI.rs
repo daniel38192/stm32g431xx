@@ -60,7 +60,7 @@ impl SPI {
         Self::configure_specific_registers();
         Self::set_settings(SpiSettings {
             spi_mode: SpiMode::Mode0,
-            spi_clock_divider: SpiClockDivider::DivideBy256,
+            spi_clock_divider: SpiClockDivider::DivideBy128,
             spi_frame_format: SpiFrameFormat::MSBFirst,
             spi_data_size: SpiDataSize::Bit8
         });
@@ -68,7 +68,7 @@ impl SPI {
         Self::enable_peripheral()
     }
 
-    pub fn transmit(data: Option<u16>) -> Option<u16> {
+    pub fn transfer(data: Option<u16>) -> Option<u16> {
         unsafe {
             let port = &*stm32g431::SPI3::ptr();
 
@@ -260,7 +260,7 @@ fn SPI3() {
     let port = unsafe { &*stm32g431::SPI3::ptr() };
 
     if port.sr.read().rxne().bit_is_set() {
-        let received_data = SPI::transmit(None).unwrap();
+        let received_data = SPI::transfer(None).unwrap();
         unsafe {ON_RECEIVE_HANDLER(received_data)}
     }
 
