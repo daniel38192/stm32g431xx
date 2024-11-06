@@ -60,7 +60,7 @@ impl SPI {
         Self::configure_specific_registers();
         Self::set_settings(SpiSettings {
             spi_mode: SpiMode::Mode0,
-            spi_clock_divider: SpiClockDivider::DivideBy128,
+            spi_clock_divider: SpiClockDivider::DivideBy256,
             spi_frame_format: SpiFrameFormat::MSBFirst,
             spi_data_size: SpiDataSize::Bit8
         });
@@ -68,24 +68,48 @@ impl SPI {
         Self::enable_peripheral()
     }
 
-    pub fn transfer(data: Option<u16>) -> Option<u16> {
+    pub fn transfer(data: Option<u8>) -> Option<u8> {
         unsafe {
             let port = &*stm32g431::SPI3::ptr();
 
             if data.is_some() {
-                port.dr.as_ptr().write_volatile(data.unwrap() as u32);
+                *(port.dr.as_ptr() as *mut u8) = data.unwrap();
 
                 while port.sr.read().txe().bit_is_clear() { };
             }
 
             if port.sr.read().rxne().bit_is_set() {
-                Some(port.dr.as_ptr().read() as u16)
+                Some(port.dr.as_ptr().read() as u8)
             } else {
                 None
             }
 
         }
     }
+
+    pub fn transfer16(data: Option<u16>) -> Option<u16> {
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+
+
+
+            if data.is_some() {
+                port.dr.as_ptr().write(data.unwrap() as u32);
+
+                while port.sr.read().txe().bit_is_clear() { };
+            }
+
+
+
+            if port.sr.read().rxne().bit_is_set() {
+                Some(port.dr.as_ptr().read() as u8)
+            } else {
+                None
+            }
+
+        }
+    }
+
 
     pub fn set_settings(spi_settings: SpiSettings){
         Self::set_clock_divider(spi_settings.spi_clock_divider);
@@ -261,7 +285,7 @@ fn SPI3() {
 
     if port.sr.read().rxne().bit_is_set() {
         let received_data = SPI::transfer(None).unwrap();
-        unsafe {ON_RECEIVE_HANDLER(received_data)}
+        //unsafe {ON_RECEIVE_HANDLER(received_data)}
     }
 
 }

@@ -2,7 +2,6 @@
 
 use alloc::string::String;
 use core::fmt::{Debug, Formatter};
-use core::ptr::read;
 use stm32g4::stm32g431;
 use crate::system::APB2_FREQ;
 use crate::drivers::gpio::{Gpio, GpioConfig, GPIOPORT, MODER, OSPEEDR, OTYPER, PUPDR};

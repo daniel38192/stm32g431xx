@@ -22,7 +22,7 @@ fn main() -> ! {
 
     system::system_init();
 
-    let peripherals = stm32g4::stm32g431::Peripherals::take().unwrap();
+    //let peripherals = stm32g4::stm32g431::Peripherals::take().unwrap();
 
     LED.configure(GpioConfig{
         moder: MODER::GeneralPurposeOutput,
@@ -55,20 +55,6 @@ fn main() -> ! {
 
     slave_select.low();
 
-    non_exact_time_delay(900);
-
-    SPI::transfer(Some('c' as u16));
-
-    non_exact_time_delay(900);
-
-    SPI::transfer(Some('a' as u16));
-
-    non_exact_time_delay(900);
-
-    SPI::transfer(Some('c' as u16));
-
-    non_exact_time_delay(900);
-
    // slave_select.high();
 
 
@@ -76,14 +62,13 @@ fn main() -> ! {
 
 
     loop {
-        /*
-        Serial::print("Type char to transmit: ");
 
-        let char = Serial::read_input_text().as_bytes()[0];
+        Serial::print("Type data to transmit: ");
 
-        SPI::transfer(Some(char as u16));
+        let char: i32 = Serial::read_input_text().parse().unwrap();
 
-         */
+        SPI::transfer(Some(char as u8));
+
 
     }
 }
