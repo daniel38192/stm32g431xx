@@ -102,7 +102,7 @@ impl SPI {
 
 
             if port.sr.read().rxne().bit_is_set() {
-                Some(port.dr.as_ptr().read() as u8)
+                Some(port.dr.as_ptr().read() as u16)
             } else {
                 None
             }
