@@ -91,15 +91,11 @@ impl SPI {
         unsafe {
             let port = &*stm32g431::SPI3::ptr();
 
-
-
             if data.is_some() {
                 port.dr.as_ptr().write(data.unwrap() as u32);
 
                 while port.sr.read().txe().bit_is_clear() { };
             }
-
-
 
             if port.sr.read().rxne().bit_is_set() {
                 Some(port.dr.as_ptr().read() as u16)
@@ -151,6 +147,7 @@ impl SPI {
     fn set_data_size(size: SpiDataSize) {
         unsafe {
             let port = &*stm32g431::SPI3::ptr();
+            port.cr2.as_ptr().write(port.cr2.as_ptr().read() & !(0xF << 8));
             port.cr2.as_ptr().write(port.cr2.as_ptr().read() | (size.as_u32() << 8));
         }
     }
