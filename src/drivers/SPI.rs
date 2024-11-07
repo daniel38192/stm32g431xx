@@ -93,6 +93,29 @@ impl SPI {
         }
     }
 
+    pub fn transfer16(data: Option<u16>) -> Option<u16> {
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+
+
+            if data.is_some() {
+                *(port.dr.as_ptr() as *mut u16) = data.unwrap();
+
+                while port.sr.read().txe().bit_is_clear() { };
+            }
+
+            if port.sr.read().rxne().bit_is_set() {
+                let val = *(port.dr.as_ptr() as *mut u16);
+                Some(val)
+            } else {
+                None
+            }
+
+        }
+    }
+
+
+
     pub fn set_settings(spi_settings: SpiSettings){
         Self::set_clock_divider(spi_settings.spi_clock_divider);
         Self::set_frame_format(spi_settings.spi_frame_format);
@@ -110,6 +133,9 @@ impl SPI {
             }
         }
     }
+}
+
+impl SPI {
 
     fn set_clock_divider(div: SpiClockDivider) {
         unsafe {
@@ -171,6 +197,10 @@ impl SPI {
         PC11_SPI3_MISO.configure(TYPE_SPI3_GPIO_PORT);
     }
 
+    fn configure_slave_pins(){
+        PA4_SPI3_NSS.configure(TYPE_SPI3_GPIO_PORT);
+    }
+
 }
 
 const PB5_SPI3_MOSI: gpio::Gpio = gpio::Gpio {
@@ -186,6 +216,11 @@ const PC10_SPI3_SCK: gpio::Gpio = gpio::Gpio {
 const PC11_SPI3_MISO: gpio::Gpio = gpio::Gpio {
     port: gpio::GPIOPORT::GPIOC,
     pin_number: 11
+};
+
+const PA4_SPI3_NSS: gpio::Gpio = gpio::Gpio {
+    port: gpio::GPIOPORT::GPIOA,
+    pin_number: 4
 };
 
 const SPI3_ALF_FUNC_SEL: u8 = 6;
