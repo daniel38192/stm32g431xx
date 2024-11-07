@@ -6,7 +6,7 @@ use core::panic::PanicInfo;
 use core::sync::atomic;
 use core::sync::atomic::Ordering;
 use cortex_m::peripheral::NVIC;
-use stm32g4::stm32g431::Interrupt::USART1;
+use stm32g4::stm32g431::Interrupt::{SPI3, USART1};
 use crate::drivers::serial::Serial;
 
 pub const SYSCLK_FREQ: u32 = 170000000;
@@ -67,12 +67,14 @@ fn system_clock_config(){
 fn enable_interrupts(){
     unsafe {
         let mut cortex_m_peripherals = cortex_m::Peripherals::take().unwrap();
-        enable_usart1_interrupt(&mut cortex_m_peripherals.NVIC)
+        enable_usart1_interrupt(&mut cortex_m_peripherals.NVIC);
+        //enable_spi3_interrupt(&mut cortex_m_peripherals.NVIC)
     }
 }
 
 fn disable_interrupts_in_case_of_fault(){
-    disable_usart1_interrupt()
+    disable_usart1_interrupt();
+    disable_spi3_interrupt()
 }
 
 unsafe fn enable_hsi(){
@@ -137,9 +139,18 @@ unsafe fn switch_clock_source_to_pll(){
 
 unsafe fn enable_usart1_interrupt(nvic: &mut NVIC){
     NVIC::unmask(USART1);
-    NVIC::set_priority(nvic, USART1, 1);
+    NVIC::set_priority(nvic, USART1, 2);
+}
+
+unsafe fn enable_spi3_interrupt(nvic: &mut NVIC){
+    NVIC::unmask(SPI3);
+    NVIC::set_priority(nvic, SPI3, 1);
 }
 
 fn disable_usart1_interrupt(){
     NVIC::mask(USART1);
+}
+
+fn disable_spi3_interrupt(){
+    NVIC::mask(SPI3);
 }

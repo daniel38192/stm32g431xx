@@ -5,8 +5,8 @@ mod system;
 mod drivers;
 mod core;
 
+use alloc::format;
 use cortex_m_rt::entry;
-use crate::core::delay::non_exact_time_delay;
 use crate::drivers::gpio::{Gpio, GpioConfig, GPIOPORT, MODER, OSPEEDR, OTYPER, PUPDR};
 use crate::drivers::serial::Serial;
 use crate::drivers::SPI::SPI;
@@ -22,7 +22,7 @@ fn main() -> ! {
 
     system::system_init();
 
-    //let peripherals = stm32g4::stm32g431::Peripherals::take().unwrap();
+    let peripherals = stm32g4::stm32g431::Peripherals::take().unwrap();
 
     LED.configure(GpioConfig{
         moder: MODER::GeneralPurposeOutput,
@@ -57,6 +57,8 @@ fn main() -> ! {
 
    // slave_select.high();
 
+    //SPI::on_receive_interrupt_enabled(true);
+    //SPI::on_receive(spi_routine);
 
 
 
@@ -69,8 +71,14 @@ fn main() -> ! {
 
         SPI::transfer(Some(char as u8));
 
+        Serial::println(format!("SPI3_SR: {:b}", peripherals.SPI3.sr.read().bits()).as_str());
+
 
     }
+}
+
+fn spi_routine(received_data: u16){
+    Serial::println(format!("Received data at spi: {}", received_data).as_str());
 }
 
 

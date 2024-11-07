@@ -114,6 +114,19 @@ impl SPI {
         Self::set_data_size(spi_settings.spi_data_size)
     }
 
+    pub fn on_receive_interrupt_enabled(enabled: bool){
+        //Enable or RXNE interrupt
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+            if enabled {
+                port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (1 << 6));
+            } else {
+                port.cr1.as_ptr().write(port.cr1.as_ptr().read() & !(1 << 6));
+            }
+        }
+
+    }
+
     pub fn on_receive(handler: fn(u16)){
         unsafe {
             ON_RECEIVE_HANDLER = handler;
@@ -167,9 +180,9 @@ impl SPI {
     }
 
     fn configure_specific_registers(){
-        //Set software NSS management SMM = 1 in SPI_CR1 register
         unsafe {
             let port = &*stm32g431::SPI3::ptr();
+            //Set software NSS management SMM = 1 in SPI_CR1 register
             port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (1 << 9));
             port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (1 << 8))
         }
@@ -278,11 +291,10 @@ fn spi3_on_receive_default_handler(_received_data: u16) { }
 
 #[interrupt]
 fn SPI3() {
-    let port = unsafe { &*stm32g431::SPI3::ptr() };
 
-    if port.sr.read().rxne().bit_is_set() {
-        let received_data = SPI::transfer(None).unwrap();
-        //unsafe {ON_RECEIVE_HANDLER(received_data)}
+    unsafe {
+        let port = &*stm32g431::SPI3::ptr();
+        ON_RECEIVE_HANDLER(port.dr.as_ptr().read() as u16);
     }
 
 }
