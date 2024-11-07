@@ -55,30 +55,26 @@ fn main() -> ! {
 
     slave_select.low();
 
-   // slave_select.high();
-
-    //SPI::on_receive_interrupt_enabled(true);
-    //SPI::on_receive(spi_routine);
-
-
 
 
     loop {
 
         Serial::print("Type data to transmit: ");
 
-        let char: i32 = Serial::read_input_text().parse().unwrap();
+        let data = Serial::read_input_text().parse::<u8>().expect("Cannot convert value");
 
-        SPI::transfer(Some(char as u8));
+        let rec_val = SPI::transmit(Some(data));
 
-        Serial::println(format!("SPI3_SR: {:b}", peripherals.SPI3.sr.read().bits()).as_str());
+        if rec_val.is_some() {
+            Serial::println(format!("Received from SPI: {}", rec_val.unwrap()).as_str());
+        }
+
+        unsafe {
+            Serial::println(format!("SPI3_SR {:b}", peripherals.SPI3.sr.as_ptr().read()). as_str())
+        }
 
 
     }
-}
-
-fn spi_routine(received_data: u16){
-    Serial::println(format!("Received data at spi: {}", received_data).as_str());
 }
 
 
