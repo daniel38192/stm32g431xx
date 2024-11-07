@@ -53,10 +53,10 @@ pub struct SpiSettings {
 pub struct SPI();
 
 impl SPI {
-    pub fn begin(){
+    pub fn begin_master(){
         Self::enable_rcc_clock();
         Self::configure_pins();
-        Self::configure_specific_registers();
+        Self::configure_master_specific_registers();
         Self::set_settings(SpiSettings {
             spi_mode: SpiMode::Mode0,
             spi_clock_divider: SpiClockDivider::DivideBy256,
@@ -67,7 +67,12 @@ impl SPI {
         Self::enable_peripheral()
     }
 
-    pub fn transmit(data: Option<u8>) -> Option<u8> {
+    pub fn begin_slave(){
+        Self::enable_rcc_clock();
+        Self::configure_pins()
+    }
+
+    pub fn transfer(data: Option<u8>) -> Option<u8> {
         unsafe {
             let port = &*stm32g431::SPI3::ptr();
 
@@ -88,45 +93,50 @@ impl SPI {
         }
     }
 
+    pub fn set_settings(spi_settings: SpiSettings){
+        Self::set_clock_divider(spi_settings.spi_clock_divider);
+        Self::set_frame_format(spi_settings.spi_frame_format);
+        Self::set_spi_mode(spi_settings.spi_mode);
+        Self::set_data_size(spi_settings.spi_data_size)
+    }
+
     fn master_selection(master_mode: bool){
         unsafe {
             let port = &*stm32g431::SPI3::ptr();
-            port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (master_mode.as_u32() << 2))
+            if master_mode {
+                port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (1 << 2))
+            } else {
+                port.cr1.as_ptr().write(port.cr1.as_ptr().read() & !(1 << 2))
+            }
         }
     }
-    pub fn set_settings(spi_settings: SpiSettings){
-        fn set_clock_divider(div: SpiClockDivider) {
-            unsafe {
-                let port = &*stm32g431::SPI3::ptr();
-                port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (div.as_u32() << 3));
-            }
-        }
 
-        fn set_frame_format(fmt: SpiFrameFormat) {
-            unsafe {
-                let port = &*stm32g431::SPI3::ptr();
-                port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (fmt.as_u32() << 7));
-            }
+    fn set_clock_divider(div: SpiClockDivider) {
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+            port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (div.as_u32() << 3));
         }
+    }
 
-        fn set_spi_mode(mode: SpiMode) {
-            unsafe {
-                let port = &*stm32g431::SPI3::ptr();
-                port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (mode.as_u32() << 0));
-            }
+    fn set_frame_format(fmt: SpiFrameFormat) {
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+            port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (fmt.as_u32() << 7));
         }
+    }
 
-        fn set_data_size(size: SpiDataSize) {
-            unsafe {
-                let port = &*stm32g431::SPI3::ptr();
-                port.cr2.as_ptr().write(port.cr2.as_ptr().read() | (size.as_u32() << 8));
-            }
+    fn set_spi_mode(mode: SpiMode) {
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+            port.cr1.as_ptr().write(port.cr1.as_ptr().read() | (mode.as_u32() << 0));
         }
+    }
 
-        set_clock_divider(spi_settings.spi_clock_divider);
-        set_frame_format(spi_settings.spi_frame_format);
-        set_spi_mode(spi_settings.spi_mode);
-        set_data_size(spi_settings.spi_data_size)
+    fn set_data_size(size: SpiDataSize) {
+        unsafe {
+            let port = &*stm32g431::SPI3::ptr();
+            port.cr2.as_ptr().write(port.cr2.as_ptr().read() | (size.as_u32() << 8));
+        }
     }
 
     fn enable_peripheral(){
@@ -136,7 +146,7 @@ impl SPI {
         }
     }
 
-    fn configure_specific_registers(){
+    fn configure_master_specific_registers(){
         //Set software NSS management SMM = 1 in SPI_CR1 register
         unsafe {
             let port = &*stm32g431::SPI3::ptr();

@@ -51,7 +51,7 @@ fn main() -> ! {
 
     slave_select.high();
 
-    SPI::begin();
+    SPI::begin_master();
 
     slave_select.low();
 
@@ -63,14 +63,10 @@ fn main() -> ! {
 
         let data = Serial::read_input_text().parse::<u8>().expect("Cannot convert value");
 
-        let rec_val = SPI::transmit(Some(data));
+        let rec_val = SPI::transfer(Some(data));
 
         if rec_val.is_some() {
-            Serial::println(format!("Received from SPI: {}", rec_val.unwrap()).as_str());
-        }
-
-        unsafe {
-            Serial::println(format!("SPI3_SR {:b}", peripherals.SPI3.sr.as_ptr().read()). as_str())
+            Serial::println(format!("Received from SPI: {:X}", rec_val.unwrap()).as_str());
         }
 
 
