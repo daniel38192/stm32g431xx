@@ -1,0 +1,10 @@
+/Users/daniel/IdeaProjects/stm32h562xx/target/thumbv8m.main-none-eabihf/debug/deps/libemballoc-c59c9b918cfd09e1.rmeta: /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/lib.rs /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/mod.rs /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/buffer.rs /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/entry.rs
+
+/Users/daniel/IdeaProjects/stm32h562xx/target/thumbv8m.main-none-eabihf/debug/deps/libemballoc-c59c9b918cfd09e1.rlib: /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/lib.rs /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/mod.rs /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/buffer.rs /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/entry.rs
+
+/Users/daniel/IdeaProjects/stm32h562xx/target/thumbv8m.main-none-eabihf/debug/deps/emballoc-c59c9b918cfd09e1.d: /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/lib.rs /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/mod.rs /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/buffer.rs /Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/entry.rs
+
+/Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/lib.rs:
+/Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/mod.rs:
+/Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/buffer.rs:
+/Users/daniel/.cargo/registry/src/index.crates.io-6f17d22bba15001f/emballoc-0.3.0/src/raw_allocator/entry.rs:

@@ -1,0 +1,13 @@
+[package]
+name = "stm32h562xx"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+panic-halt = "1.0.0"
+cortex-m = {version = "0.7.7", features = ["critical-section-single-core"]}
+cortex-m-rt = {version = "0.7.5"}
+stm32h5  = {version = "0.15.1", features = ["stm32h562", "critical-section"]}
+emballoc = "0.3.0"
+
+

@@ -1,0 +1,3 @@
+cargo:rustc-link-search=/Users/daniel/IdeaProjects/stm32h562xx/target/thumbv8m.main-none-eabihf/debug/build/stm32h5-5585e74cf942de99/out
+cargo:rerun-if-changed=src/stm32h562/device.x
+cargo:rerun-if-changed=build.rs
